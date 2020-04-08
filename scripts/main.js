@@ -1,3 +1,4 @@
+const buttons = document.querySelectorAll(".button");
 const displayBlock = document.querySelector(".display p");
 const numInputs = document.querySelectorAll(".number");
 const clearInput = document.querySelector(".clear");
@@ -19,7 +20,7 @@ let operatorMemory = "";
 const addAndSubtractEvents = function(){
     // store value of current number array if no previous operator is stored or last operator was equals.
     if((!operators[0] || operators[0] === "equals") && valueInput[0]) {
-        storedValue = parseInt(valueInput.join(""));   
+        storedValue = parseFloat(valueInput.join(""));   
     } 
     // obtain results of stored operator if previous non-equals operator exists.
     else if(operators[0] && valueInput[0]) {
@@ -39,12 +40,12 @@ const addAndSubtractEvents = function(){
 const multiplyAndDivideEvents = function(){
     // store value of current number array if no previous operator is stored or last operator was equals.
     if((!operators[0] || operators[0] === "equals") && valueInput[0]) {
-        storedValue = parseInt(valueInput.join(""));   
+        storedValue = parseFloat(valueInput.join(""));   
     }
     // move lower priority value to memory
     else if((operators[0] === "+" || operators[0] === "−") && valueInput[0]) {
         prevStoredValue = storedValue;
-        storedValue = parseInt(valueInput.join(""));
+        storedValue = parseFloat(valueInput.join(""));
         operatorMemory = operators[0];
     }
     // obtain results of stored operator if previous non-equals operator exists.
@@ -60,40 +61,32 @@ const multiplyAndDivideEvents = function(){
 numInputs.forEach(function(node){
    node.addEventListener("click", function() {
         if(valueInput.length < 10) {
-            valueInput.push(parseInt(node.textContent));
+            valueInput.push(parseFloat(node.textContent));
             displayBlock.textContent = valueInput.join("");
         } 
     }); 
 })
+
+buttons.forEach(function(node){
+    node.addEventListener("click", function() { 
+         node.classList.add("clicked");
+     }); 
+    node.addEventListener("transitionend", function() { 
+         node.classList.remove("clicked");
+     }); 
+ })
 
 // Event listeners for clicking operator buttons/
 addInput.addEventListener("click", addAndSubtractEvents);
 subtractInput.addEventListener("click", addAndSubtractEvents);
 
 multiplyInput.addEventListener("click", multiplyAndDivideEvents);
-
-divideInput.addEventListener("click", function(){
-    if(newInput && !storedValue) {
-        return;
-    } else if(storedOperator === "+" || storedOperator === "-") {
-        prevStoredOperator = storedOperator;
-        prevStoredValue = storedValue;
-        storedValue = currentValue;
-        newInput = true;
-    } else if(storedOperator) {
-        getResult();
-    } else {
-        storedValue = currentValue;
-        newInput = true;
-    }
-    storedOperator = "÷";
-    decimalNext = false;
-});
+divideInput.addEventListener("click", multiplyAndDivideEvents);
 
 decimalInput.addEventListener("click", function(){
-    if(decimalNext === false) {
-        displayBlock.textContent += ".";
-        decimalNext = true; 
+    if(!valueInput.includes(".")) {
+        valueInput.push(this.textContent);
+        displayBlock.textContent = valueInput.join(""); 
     }
 });
 
@@ -103,7 +96,10 @@ clearInput.addEventListener("click", function() {
 
 // listens for click on equals button.
 equalsInput.addEventListener("click", function(){
-    if(!operators[0]) {valueInput = []} //do nothing and reset input array if no operations performed
+    if(!operators[0]) {
+        storedValue = parseFloat(valueInput.join(""));
+        valueInput = [];
+    } //do nothing and reset input array if no operations performed
     // obtain result of operation otherwise
     else {
         getResult();
@@ -177,8 +173,8 @@ const getResult = function(outer = false) {
         console.log(valueInput[0]);
         return;
     } else {
-        result = operate(operators[0], storedValue, parseInt(valueInput.join("")));
-        equalsValue = parseInt(valueInput.join(""));
+        result = operate(operators[0], storedValue, parseFloat(valueInput.join("")));
+        equalsValue = parseFloat(valueInput.join(""));
     }
     displayBlock.textContent = result;
     valueInput = [];
