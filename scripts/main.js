@@ -8,6 +8,7 @@ const subtractInput = document.querySelector("#subtract");
 const multiplyInput = document.querySelector("#multiply");
 const divideInput = document.querySelector("#divide");
 const decimalInput = document.querySelector("#decimal");
+const plusMinusInput = document.querySelector("#plus-minus");
 
 let valueInput = [];
 let operators = [];
@@ -15,6 +16,7 @@ let storedValue = 0;
 let prevStoredValue = 0;
 let equalsValue = 0;
 let operatorMemory = "";
+let result = 0;
 
 // add case if prevStoredValue exists
 const addAndSubtractEvents = function(){
@@ -90,6 +92,20 @@ decimalInput.addEventListener("click", function(){
     }
 });
 
+plusMinusInput.addEventListener("click", function(){
+    if(valueInput[0] === "-") {
+        valueInput.shift();
+        displayBlock.textContent = valueInput.join("");
+    } else if(valueInput[0]) {
+        valueInput.unshift("-");
+        displayBlock.textContent = valueInput.join("");
+    } else {
+        result *= -1;
+        storedValue *= -1;
+        displayBlock.textContent = result;
+    }
+})
+
 clearInput.addEventListener("click", function() {
     clear();
 });
@@ -141,11 +157,11 @@ const clear = function() {
     storedValue = 0;
     prevStoredValue = 0;
     operatorMemory = "";
+    result = 0;
 }
 
 // call correct math function based on operator
 const operate = function(operator, a, b) {
-    let result = 0;
     switch (operator) {
         case "+":
             return add(a, b);
@@ -162,7 +178,6 @@ const operate = function(operator, a, b) {
 
 // update display and stored values when called by event listeners. repeats prior operation if equals is hit consecutively
 const getResult = function(outer = false) {
-    let result = 0;
     if(operators[0] === "equals" && !valueInput[0]) {
         result = operate(operators[1], storedValue, equalsValue);
     } else if (outer === true) {
@@ -170,7 +185,6 @@ const getResult = function(outer = false) {
         prevStoredValue = 0;
         operatorMemory = "";
     } else if(!operators[0] || !valueInput[0]) {
-        console.log(valueInput[0]);
         return;
     } else {
         result = operate(operators[0], storedValue, parseFloat(valueInput.join("")));
