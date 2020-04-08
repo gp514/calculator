@@ -10,15 +10,10 @@ const decimalInput = document.querySelector("#decimal");
 
 let valueInput = [];
 let operators = [];
-let currentValue = 0;
 let storedValue = 0;
 let prevStoredValue = 0;
-let storedOperator = "";
-let prevStoredOperator = "";
-let newInput = true;
-let decimalNext = false;
 
-
+// build array of the number input by clicks. does not allow for numbers greater than 9 digits.
 numInputs.forEach(function(node){
    node.addEventListener("click", function() {
         if(valueInput.length < 10) {
@@ -28,14 +23,21 @@ numInputs.forEach(function(node){
     }); 
 })
 
+// functionality for clicking the add button/
 addInput.addEventListener("click", function(){
-    if(!storedValue && !valueInput) {
+    // do nothing if pressed when calculator is cleared
+    if(!storedValue && !valueInput) { 
         return; 
-    } else if(!operators[0] && operators[0] != "equals") {
+    } 
+    // store value of current number array is no previous operator is stored and last operator was not equals.
+    else if(!operators[0] && operators[0] != "equals") {
         storedValue = parseInt(valueInput.join(""));   
-    } else if(operators[0] === "+" || operators[0] === "-") {
+    } 
+    // obtain results of stored operator if previous non-equals operator exists.
+    else if(!operators[0]) {
         getResult();
     }
+    // clear input array to build new number. add plus to beginning of operator array.
     operators.unshift("+");
     valueInput = [];
 });
@@ -100,17 +102,22 @@ clearInput.addEventListener("click", function() {
     clear();
 });
 
+// listens for click on equals button.
 equalsInput.addEventListener("click", function(){
-    if(!operators[0]) {valueInput = []}
+    if(!operators[0]) {valueInput = []} //do nothing and reset input array if no operations performed
+    // obtain result of operation otherwise
     else {
         getResult();
+        // only store one equals operator to preserve prior operator to repeat function
         if(operators[0] != "equals") {
             operators.unshift("equals");
         }
+        // limit size of operators array
         if(operators.length > 2) operators.pop();
     }
 })
 
+// basic mathematical functions
 const add = function(a, b) {
     return round(a + b);
 }
@@ -127,16 +134,17 @@ const divide = function(a, b) {
     return round(a / b);
 }
 
+// reinitialize display and all stored values
 const clear = function() {
     displayBlock.textContent = "0";
+
     valueInput = [];
     operators = [];
-
-    //previous variables
-    currentValue = 0;
     storedValue = 0;
+    prevStoredValue = 0;
 }
 
+// call correct math function based on operator
 const operate = function(operator, a, b) {
     let result = 0;
     switch (operator) {
@@ -153,6 +161,7 @@ const operate = function(operator, a, b) {
     }
 }
 
+// update display and stored values when called by event listeners. repeats prior operation if equals is hit consecutively
 const getResult = function() {
     let result = 0;
     if(!operators[0]) {
@@ -168,6 +177,7 @@ const getResult = function() {
     storedValue = result;
 }
 
+// round operation results to avoid overflow on calculator display
 const round = function(number) {
     return Math.round(Math.trunc(number*10000))/10000;
 }
