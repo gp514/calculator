@@ -6,6 +6,7 @@ const addInput = document.querySelector("#add");
 const subtractInput = document.querySelector("#subtract");
 const multiplyInput = document.querySelector("#multiply");
 const divideInput = document.querySelector("#divide");
+const decimalInput = document.querySelector("#decimal");
 
 let currentValue = 0;
 let storedValue = 0;
@@ -13,6 +14,7 @@ let prevStoredValue = 0;
 let storedOperator = "";
 let prevStoredOperator = "";
 let newInput = true;
+let decimalNext = false;
 
 
 numInputs.forEach(function(node){
@@ -22,14 +24,19 @@ numInputs.forEach(function(node){
             displayBlock.textContent = node.textContent;
             newInput = false;
         } else if(currentValue < 999999999) {
-            currentValue = currentValue*10 + parseInt(node.textContent);
+            if(decimalNext){
+                currentValue = currentValue + parseInt(node.textContent)/10;
+            } else {
+                currentValue = currentValue*10 + parseInt(node.textContent);
+
+            }
             displayBlock.textContent += node.textContent;
         }
     }); 
 })
 
 addInput.addEventListener("click", function(){
-    if(newInput) {
+    if(newInput && !storedValue) {
         return;
     } else if(storedOperator) {
         getResult();
@@ -38,10 +45,11 @@ addInput.addEventListener("click", function(){
         newInput = true;
     }
     storedOperator = "+";
+    decimalNext = false;
 });
 
 subtractInput.addEventListener("click", function(){
-    if(newInput) {
+    if(newInput && !storedValue) {
         return;
     } else if(storedOperator) {
         getResult();
@@ -50,10 +58,11 @@ subtractInput.addEventListener("click", function(){
         newInput = true;
     }
     storedOperator = "-";
+    decimalNext = false;
 });
 
 multiplyInput.addEventListener("click", function(){
-    if(newInput) {
+    if(newInput && !storedValue) {
         return;
     } else if(storedOperator === "+" || storedOperator === "-") {
         prevStoredOperator = storedOperator;
@@ -67,10 +76,11 @@ multiplyInput.addEventListener("click", function(){
         newInput = true;
     }
     storedOperator = "×";
+    decimalNext = false;
 });
 
 divideInput.addEventListener("click", function(){
-    if(newInput) {
+    if(newInput && !storedValue) {
         return;
     } else if(storedOperator === "+" || storedOperator === "-") {
         prevStoredOperator = storedOperator;
@@ -84,6 +94,14 @@ divideInput.addEventListener("click", function(){
         newInput = true;
     }
     storedOperator = "÷";
+    decimalNext = false;
+});
+
+decimalInput.addEventListener("click", function(){
+    if(decimalNext === false) {
+        displayBlock.textContent += ".";
+        decimalNext = true; 
+    }
 });
 
 clearInput.addEventListener("click", function() {
@@ -117,6 +135,7 @@ const clear = function() {
     storedValue = 0;
     storedOperator = "";
     newInput = true;
+    decimalNext = false;
 }
 
 const operate = function(operator, a, b) {
@@ -144,6 +163,7 @@ const getResult = function() {
     currentValue = result;
     storedValue = result;
     newInput = true;
+    decimalNext = false;
 }
 
 const round = function(number) {
