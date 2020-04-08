@@ -12,6 +12,49 @@ let valueInput = [];
 let operators = [];
 let storedValue = 0;
 let prevStoredValue = 0;
+let equalsValue = 0;
+let operatorMemory = "";
+
+// add case if prevStoredValue exists
+const addAndSubtractEvents = function(){
+    // store value of current number array if no previous operator is stored or last operator was equals.
+    if((!operators[0] || operators[0] === "equals") && valueInput[0]) {
+        storedValue = parseInt(valueInput.join(""));   
+    } 
+    // obtain results of stored operator if previous non-equals operator exists.
+    else if(operators[0] && valueInput[0]) {
+        getResult();
+    }
+
+    if(prevStoredValue) {
+        getResult(true);
+    }
+    // clear input array to build new number. update operator array to have selected operator. clear prevStoredValue as order of operations is maintained.
+    operators.unshift(this.textContent);
+    valueInput = [];
+    prevStoredValue = 0;
+}
+
+// separate function to respect order of operations
+const multiplyAndDivideEvents = function(){
+    // store value of current number array if no previous operator is stored or last operator was equals.
+    if((!operators[0] || operators[0] === "equals") && valueInput[0]) {
+        storedValue = parseInt(valueInput.join(""));   
+    }
+    // move lower priority value to memory
+    else if((operators[0] === "+" || operators[0] === "−") && valueInput[0]) {
+        prevStoredValue = storedValue;
+        storedValue = parseInt(valueInput.join(""));
+        operatorMemory = operators[0];
+    }
+    // obtain results of stored operator if previous non-equals operator exists.
+    else if(operators[0] && valueInput[0]) {
+        getResult();
+    }
+    // clear input array to build new number. update operator array to have selected operator.
+    operators.unshift(this.textContent);
+    valueInput = [];
+}
 
 // build array of the number input by clicks. does not allow for numbers greater than 9 digits.
 numInputs.forEach(function(node){
@@ -23,55 +66,11 @@ numInputs.forEach(function(node){
     }); 
 })
 
-// functionality for clicking the add button/
-addInput.addEventListener("click", function(){
-    // do nothing if pressed when calculator is cleared
-    if(!storedValue && !valueInput) { 
-        return; 
-    } 
-    // store value of current number array is no previous operator is stored and last operator was not equals.
-    else if(!operators[0] && operators[0] != "equals") {
-        storedValue = parseInt(valueInput.join(""));   
-    } 
-    // obtain results of stored operator if previous non-equals operator exists.
-    else if(!operators[0]) {
-        getResult();
-    }
-    // clear input array to build new number. add plus to beginning of operator array.
-    operators.unshift("+");
-    valueInput = [];
-});
+// Event listeners for clicking operator buttons/
+addInput.addEventListener("click", addAndSubtractEvents);
+subtractInput.addEventListener("click", addAndSubtractEvents);
 
-subtractInput.addEventListener("click", function(){
-    if(newInput && !storedValue) {
-        return;
-    } else if(storedOperator) {
-        getResult();
-    } else {
-        storedValue = currentValue;
-        newInput = true;
-    }
-    storedOperator = "-";
-    decimalNext = false;
-});
-
-multiplyInput.addEventListener("click", function(){
-    if(newInput && !storedValue) {
-        return;
-    } else if(storedOperator === "+" || storedOperator === "-") {
-        prevStoredOperator = storedOperator;
-        prevStoredValue = storedValue;
-        storedValue = currentValue;
-        newInput = true;
-    } else if(storedOperator) {
-        getResult();
-    } else {
-        storedValue = currentValue;
-        newInput = true;
-    }
-    storedOperator = "×";
-    decimalNext = false;
-});
+multiplyInput.addEventListener("click", multiplyAndDivideEvents);
 
 divideInput.addEventListener("click", function(){
     if(newInput && !storedValue) {
@@ -108,6 +107,9 @@ equalsInput.addEventListener("click", function(){
     // obtain result of operation otherwise
     else {
         getResult();
+        if(prevStoredValue) {
+            getResult(true);
+        }
         // only store one equals operator to preserve prior operator to repeat function
         if(operators[0] != "equals") {
             operators.unshift("equals");
@@ -142,6 +144,7 @@ const clear = function() {
     operators = [];
     storedValue = 0;
     prevStoredValue = 0;
+    operatorMemory = "";
 }
 
 // call correct math function based on operator
@@ -150,7 +153,7 @@ const operate = function(operator, a, b) {
     switch (operator) {
         case "+":
             return add(a, b);
-        case "-":
+        case "−":
             return subtract(a, b);
         case "×":
             return multiply(a, b);
@@ -162,15 +165,20 @@ const operate = function(operator, a, b) {
 }
 
 // update display and stored values when called by event listeners. repeats prior operation if equals is hit consecutively
-const getResult = function() {
+const getResult = function(outer = false) {
     let result = 0;
-    if(!operators[0]) {
+    if(operators[0] === "equals" && !valueInput[0]) {
+        result = operate(operators[1], storedValue, equalsValue);
+    } else if (outer === true) {
+        result = operate(operatorMemory, storedValue, prevStoredValue);
+        prevStoredValue = 0;
+        operatorMemory = "";
+    } else if(!operators[0] || !valueInput[0]) {
+        console.log(valueInput[0]);
         return;
-    } else if(operators[0] === "equals" && !valueInput[0]) {
-        result = operate(operators[1], storedValue, prevStoredValue);
     } else {
         result = operate(operators[0], storedValue, parseInt(valueInput.join("")));
-        prevStoredValue = parseInt(valueInput.join(""));
+        equalsValue = parseInt(valueInput.join(""));
     }
     displayBlock.textContent = result;
     valueInput = [];
@@ -181,4 +189,3 @@ const getResult = function() {
 const round = function(number) {
     return Math.round(Math.trunc(number*10000))/10000;
 }
-
