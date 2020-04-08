@@ -8,6 +8,8 @@ const multiplyInput = document.querySelector("#multiply");
 const divideInput = document.querySelector("#divide");
 const decimalInput = document.querySelector("#decimal");
 
+let valueInput = [];
+let operators = [];
 let currentValue = 0;
 let storedValue = 0;
 let prevStoredValue = 0;
@@ -19,33 +21,23 @@ let decimalNext = false;
 
 numInputs.forEach(function(node){
    node.addEventListener("click", function() {
-        if(newInput) {
-            currentValue = parseInt(node.textContent);
-            displayBlock.textContent = node.textContent;
-            newInput = false;
-        } else if(currentValue < 999999999) {
-            if(decimalNext){
-                currentValue = currentValue + parseInt(node.textContent)/10;
-            } else {
-                currentValue = currentValue*10 + parseInt(node.textContent);
-
-            }
-            displayBlock.textContent += node.textContent;
-        }
+        if(valueInput.length < 10) {
+            valueInput.push(parseInt(node.textContent));
+            displayBlock.textContent = valueInput.join("");
+        } 
     }); 
 })
 
 addInput.addEventListener("click", function(){
-    if(newInput && !storedValue) {
-        return;
-    } else if(storedOperator) {
+    if(!storedValue && !valueInput) {
+        return; 
+    } else if(!operators[0] && operators[0] != "equals") {
+        storedValue = parseInt(valueInput.join(""));   
+    } else if(operators[0] === "+" || operators[0] === "-") {
         getResult();
-    } else {
-        storedValue = currentValue;
-        newInput = true;
     }
-    storedOperator = "+";
-    decimalNext = false;
+    operators.unshift("+");
+    valueInput = [];
 });
 
 subtractInput.addEventListener("click", function(){
@@ -109,8 +101,14 @@ clearInput.addEventListener("click", function() {
 });
 
 equalsInput.addEventListener("click", function(){
-    getResult();
-    storedOperator = "";
+    if(!operators[0]) {valueInput = []}
+    else {
+        getResult();
+        if(operators[0] != "equals") {
+            operators.unshift("equals");
+        }
+        if(operators.length > 2) operators.pop();
+    }
 })
 
 const add = function(a, b) {
@@ -131,11 +129,12 @@ const divide = function(a, b) {
 
 const clear = function() {
     displayBlock.textContent = "0";
+    valueInput = [];
+    operators = [];
+
+    //previous variables
     currentValue = 0;
     storedValue = 0;
-    storedOperator = "";
-    newInput = true;
-    decimalNext = false;
 }
 
 const operate = function(operator, a, b) {
@@ -155,15 +154,18 @@ const operate = function(operator, a, b) {
 }
 
 const getResult = function() {
-    if(!storedOperator) {
+    let result = 0;
+    if(!operators[0]) {
         return;
+    } else if(operators[0] === "equals" && !valueInput[0]) {
+        result = operate(operators[1], storedValue, prevStoredValue);
+    } else {
+        result = operate(operators[0], storedValue, parseInt(valueInput.join("")));
+        prevStoredValue = parseInt(valueInput.join(""));
     }
-    let result = operate(storedOperator, storedValue, currentValue);
     displayBlock.textContent = result;
-    currentValue = result;
+    valueInput = [];
     storedValue = result;
-    newInput = true;
-    decimalNext = false;
 }
 
 const round = function(number) {
