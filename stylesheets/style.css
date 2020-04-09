@@ -18,7 +18,7 @@ p {
     grid-template-columns: repeat(4, 1fr);
     grid-template-areas:
         "display display display display"
-        "clear clear clear divide"
+        "clear clear backspace divide"
         "seven eight nine multiply"
         "four five six subtract"
         "one two three add"
@@ -83,6 +83,16 @@ p {
     letter-spacing: 2px;
 }
 
+.backspace {
+    grid-area: backspace;
+    background-color: grey;
+    color: rgb(53, 53, 53);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
 .number.clicked {
     background-color:rgb(158, 157, 157);
 }
@@ -91,7 +101,7 @@ p {
     background-color: rgba(255, 68, 0, 0.50);
 }
 
-.modifier.clicked {
+.modifier.clicked, .backspace.clicked {
     background-color: rgb(148, 148, 148);
 }
 
